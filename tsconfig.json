@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "lib": ["DOM", "ESNext"],
+    "declaration": true,
+    "outDir": "./dist",
+    "rootDir": "./lib",
+
+    "jsx": "react",
+    "strict": true,
+
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+
+    "forceConsistentCasingInFileNames": true
+  }
+}

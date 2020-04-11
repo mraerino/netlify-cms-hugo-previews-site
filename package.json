@@ -1,0 +1,15 @@
+{
+  "name": "netlify-cms-hugo-previews-site",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:mraerino/netlify-cms-hugo-previews-site.git",
+  "author": "Marcus Weiner <marcus.weiner@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "immutable": "^4.0.0-rc.12",
+    "netlify-cms-core": "^2.24.2",
+    "netlify-cms-lib-util": "^2.9.2",
+    "react": "^16.13.1",
+    "typescript": "^3.8.3"
+  }
+}

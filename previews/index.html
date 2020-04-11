@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Go WASM tests</title>
+  </head>
+
+  <body>
+    <script src="/dist/wasm_exec.js"></script>
+    <script>
+      const go = new Go();
+      WebAssembly.instantiateStreaming(
+        fetch("/dist/previewer.wasm"),
+        go.importObject
+      ).then(({ instance }) => go.run(instance));
+    </script>
+  </body>
+</html>

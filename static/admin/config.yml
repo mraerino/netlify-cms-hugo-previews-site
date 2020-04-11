@@ -1,6 +1,7 @@
 backend:
   name: git-gateway
   branch: master
+local_backend: true
 media_folder: static/images
 public_folder: /images
 collections:
@@ -781,7 +782,7 @@ collections:
     folder: content/
     create: true
     extension: md
-    slug: '{{slug}}'
+    slug: "{{slug}}"
     fields:
       - widget: string
         name: title
@@ -853,7 +854,7 @@ collections:
     folder: content/posts
     create: true
     extension: md
-    slug: '{{slug}}'
+    slug: "{{slug}}"
     fields:
       - widget: string
         name: title
@@ -939,7 +940,7 @@ collections:
     folder: content/projects
     create: true
     extension: md
-    slug: '{{slug}}'
+    slug: "{{slug}}"
     fields:
       - widget: string
         name: title
