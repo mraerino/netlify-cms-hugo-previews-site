@@ -53,7 +53,7 @@ func main() {
 		panic(err)
 	}
 
-	content, err := afero.ReadFile(mm, "/public/index.html")
+	content, err := afero.ReadFile(mm, "public/index.html")
 	if err != nil {
 		panic(err)
 	}

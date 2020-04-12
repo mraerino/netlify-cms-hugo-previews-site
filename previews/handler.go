@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -15,6 +16,7 @@ import (
 	"github.com/gohugoio/hugo/deps"
 	"github.com/gohugoio/hugo/hugofs"
 	"github.com/gohugoio/hugo/hugolib"
+	"github.com/mraerino/netlify-cms-hugo-previews-site/previews/githubfs"
 	nutil "github.com/netlify/netlify-commons/util"
 	"github.com/spf13/afero"
 )
@@ -36,38 +38,34 @@ func writeFiles(fs afero.Fs, files map[string]string) error {
 	return nil
 }
 
-func newPreviewAPI() (*previewAPI, error) {
-	mm := afero.NewMemMapFs()
-	// js, err := hugojs.NewJSFS(backend)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// h.fs = afero.NewCopyOnWriteFs(js, mm)
-
-	files := map[string]string{
-		"/config.yml": `
-languageCode = "en-us"
-title = "Hugo Previews Demo Site"
-		`,
-		"/content/_index.md": `
----
-title: "Homepage"
----
-# Hello World!
-		`,
-		"/layouts/index.html": `
-<div class="homepage-content">
-	{{.Content}}
-</div>
-		`,
+func setupGithubFS() (afero.Fs, error) {
+	token, ok := os.LookupEnv("HUGO_PREVIEW_GITHUB_TOKEN")
+	if !ok || token == "" {
+		return nil, errors.New("missing github token: HUGO_PREVIEW_GITHUB_TOKEN")
 	}
-	if err := writeFiles(mm, files); err != nil {
+
+	repo, ok := os.LookupEnv("HUGO_PREVIEW_GITHUB_REPO")
+	if !ok || repo == "" {
+		return nil, errors.New("missing github repo: HUGO_PREVIEW_GITHUB_REPO")
+	}
+
+	branch := os.Getenv("HUGO_PREVIEW_GITHUB_BRANCH")
+
+	return githubfs.New(token, repo, branch)
+}
+
+func newPreviewAPI() (*previewAPI, error) {
+	ghFS, err := setupGithubFS()
+	if err != nil {
 		return nil, err
 	}
 
+	mm := afero.NewMemMapFs()
+	cachedFs := afero.NewCacheOnReadFs(ghFS, mm, 0)
+	fs := afero.NewCopyOnWriteFs(cachedFs, mm)
+
 	cfg, _, err := hugolib.LoadConfig(hugolib.ConfigSourceDescriptor{
-		Fs:         mm,
+		Fs:         fs,
 		Filename:   "/config.yaml",
 		WorkingDir: "/",
 	})
@@ -75,11 +73,9 @@ title: "Homepage"
 		return nil, err
 	}
 
-	// required so public files are actually written
-	fs := hugofs.NewFrom(afero.NewBasePathFs(mm, "/"), cfg)
-
+	hugoFs := hugofs.NewFrom(fs, cfg)
 	deps := deps.DepsCfg{
-		Fs:     fs,
+		Fs:     hugoFs,
 		Cfg:    cfg,
 		Logger: loggers.NewDebugLogger(),
 	}
@@ -124,7 +120,7 @@ type payload struct {
 
 func errResp(code int, msg string, err error) (*events.APIGatewayProxyResponse, error) {
 	if err != nil {
-		fmt.Printf("%+v\n", err)
+		fmt.Printf("Err: %+v\n", err)
 	}
 	return &events.APIGatewayProxyResponse{
 		StatusCode: code,
@@ -162,8 +158,15 @@ func (a *previewAPI) handler(request events.APIGatewayProxyRequest) (*events.API
 		return errResp(http.StatusNotFound, "Failed to find public path", nil)
 	}
 
-	content, err := afero.ReadFile(a.memfs, filepath.Join("/public", publicPath))
+	content, err := afero.ReadFile(a.memfs, filepath.Join("public", publicPath))
 	if err != nil {
+		afero.Walk(a.memfs, "/", func(path string, file os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			fmt.Printf("file: %s\n", path)
+			return nil
+		})
 		return errResp(http.StatusInternalServerError, "Failed to read content", err)
 	}
 
