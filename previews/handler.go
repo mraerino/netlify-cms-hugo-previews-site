@@ -114,6 +114,19 @@ func (a *previewAPI) build(path string) error {
 	return nil
 }
 
+func (a *previewAPI) getPublicPath(contentPath string) string {
+	for _, page := range a.hugo.Pages() {
+		if !page.File().IsZero() && page.Filename() == contentPath {
+			publicPath := page.RelPermalink()
+			if strings.HasSuffix(publicPath, "/") {
+				publicPath += "index.html"
+			}
+			return publicPath
+		}
+	}
+	return ""
+}
+
 type payload struct {
 	Path string `json:"path"`
 }
@@ -143,17 +156,7 @@ func (a *previewAPI) handler(request events.APIGatewayProxyRequest) (*events.API
 		return errResp(http.StatusInternalServerError, "Failed to render site", err)
 	}
 
-	var publicPath string
-	for _, page := range a.hugo.Pages() {
-		if !page.File().IsZero() && page.Filename() == pl.Path {
-			publicPath = page.RelPermalink()
-			if strings.HasSuffix(publicPath, "/") {
-				publicPath += "index.html"
-			}
-			break
-		}
-	}
-
+	publicPath := a.getPublicPath(pl.Path)
 	if publicPath == "" {
 		return errResp(http.StatusNotFound, "Failed to find public path", nil)
 	}
