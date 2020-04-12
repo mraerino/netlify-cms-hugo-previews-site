@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/gohugoio/hugo/common/loggers"
 	"github.com/gohugoio/hugo/deps"
@@ -11,13 +12,12 @@ import (
 	"github.com/spf13/afero"
 )
 
-const (
-	token = "7502dbd4eac4dd492fa6c0f573daa188bad63ef9"
-	repo  = "mraerino/netlify-cms-hugo-previews-site"
-)
-
 func main() {
-	ghFS, err := githubfs.New(token, repo, "")
+	ghFS, err := githubfs.New(
+		os.Getenv("HUGO_PREVIEW_GITHUB_TOKEN"),
+		os.Getenv("HUGO_PREVIEW_GITHUB_REPO"),
+		"",
+	)
 	if err != nil {
 		panic(err)
 	}
