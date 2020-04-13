@@ -178,7 +178,11 @@ func (a *previewAPI) getPublicPath(path string) string {
 	if page == nil {
 		return ""
 	}
-	return page.RelPermalink()
+	permalink := page.RelPermalink()
+	if strings.HasSuffix(permalink, "/") {
+		permalink += "index.html"
+	}
+	return permalink
 }
 
 type payload struct {
