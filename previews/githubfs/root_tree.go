@@ -84,9 +84,9 @@ func (fs *githubFS) loadRepoRootTree() error {
 	fs.rootTree = res.Data.Repository.DefaultBranchRef.Target.Tree.SHA
 
 	entries := res.Data.Repository.DefaultBranchRef.Target.Tree.Entries
-	treeFiles := make(map[string]*githubFile, len(entries))
+	treeFiles := make(map[string]githubFile, len(entries))
 	for _, entry := range entries {
-		treeFiles[entry.Name] = &githubFile{
+		treeFiles[entry.Name] = githubFile{
 			fs:      fs,
 			id:      entry.Object.SHA,
 			objType: entry.Type,

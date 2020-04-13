@@ -25,7 +25,7 @@ type githubFS struct {
 	branch    string
 
 	rootTree  string
-	treeCache sync.Map // map[string]map[string]*githubFile
+	treeCache sync.Map // map[string]map[string]githubFile
 }
 
 // New creates an FS to get files from github on-demand
@@ -50,11 +50,11 @@ func New(accessToken string, repo string, branch string) (afero.Fs, error) {
 	}, nil
 }
 
-func (fs *githubFS) getTree(basePath string, id string) (map[string]*githubFile, error) {
+func (fs *githubFS) getTree(basePath string, id string) (map[string]githubFile, error) {
 	// lookup in cache
 	cacheTree, ok := fs.treeCache.Load(id)
 	if ok {
-		tree, ok := cacheTree.(map[string]*githubFile)
+		tree, ok := cacheTree.(map[string]githubFile)
 		if ok {
 			return tree, nil
 		}
@@ -75,10 +75,10 @@ func (fs *githubFS) getTree(basePath string, id string) (map[string]*githubFile,
 		return nil, err
 	}
 
-	tree := make(map[string]*githubFile)
+	tree := make(map[string]githubFile)
 	for _, entry := range ghTree.Entries {
 		fullPath := filepath.Join(basePath, entry.GetPath())
-		tree[entry.GetPath()] = &githubFile{
+		tree[entry.GetPath()] = githubFile{
 			fs:      fs,
 			id:      entry.GetSHA(),
 			objType: entry.GetType(),
@@ -116,11 +116,11 @@ func (fs *githubFS) Open(name string) (afero.File, error) {
 			return nil, err
 		}
 
-		var ok bool
-		file, ok = tree[part]
+		treeFile, ok := tree[part]
 		if !ok {
 			return nil, errNotFound
 		}
+		file = &treeFile
 
 		if file.objType == "tree" {
 			treeCursor = file.id
