@@ -98,16 +98,12 @@ func newPreviewAPI() (*previewAPI, error) {
 	}, nil
 }
 
-func contentPath(path string) string {
-	return filepath.Join("content", path)
-}
-
 func (a *previewAPI) build(path string) error {
 	partialBuild := a.initialBuildDone.Get()
 	var events []fsnotify.Event
 	if partialBuild {
 		events = append(events, fsnotify.Event{
-			Name: contentPath(path),
+			Name: path,
 			Op:   fsnotify.Write,
 		})
 	}
@@ -124,9 +120,8 @@ func (a *previewAPI) build(path string) error {
 }
 
 func (a *previewAPI) getPublicPath(path string) string {
-	mdPath := contentPath(path)
 	for _, page := range a.hugo.Pages() {
-		if !page.File().IsZero() && page.Filename() == mdPath {
+		if !page.File().IsZero() && page.Filename() == path {
 			publicPath := page.RelPermalink()
 			if strings.HasSuffix(publicPath, "/") {
 				publicPath += "index.html"
@@ -163,8 +158,7 @@ func (a *previewAPI) handler(request events.APIGatewayProxyRequest) (*events.API
 		return errResp(http.StatusBadRequest, "Failed to read request body", err)
 	}
 
-	err := a.build(pl.Path)
-	if err != nil {
+	if err := a.build(pl.Path); err != nil {
 		return errResp(http.StatusInternalServerError, "Failed to render site", err)
 	}
 
