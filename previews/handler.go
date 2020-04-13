@@ -151,7 +151,7 @@ func (a *previewAPI) build(path string) error {
 	var events []fsnotify.Event
 	if partialBuild {
 		events = append(events, fsnotify.Event{
-			Name: path,
+			Name: "/" + path,
 			Op:   fsnotify.Write,
 		})
 	}
