@@ -168,16 +168,11 @@ func (a *previewAPI) build(path string) error {
 }
 
 func (a *previewAPI) getPublicPath(path string) string {
-	for _, page := range a.hugo.Pages() {
-		if !page.File().IsZero() && page.Filename() == path {
-			publicPath := page.RelPermalink()
-			if strings.HasSuffix(publicPath, "/") {
-				publicPath += "index.html"
-			}
-			return publicPath
-		}
+	page := a.hugo.GetContentPage("/" + path)
+	if page == nil {
+		return ""
 	}
-	return ""
+	return page.RelPermalink()
 }
 
 type payload struct {
