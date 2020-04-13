@@ -4,5 +4,4 @@ command = "./stackbit-build.sh"
 functions = "previews/dist"
 
   [build.environment]
-  HUGO_VERSION = "0.47"
-  HUGO_PREVIEW_GITHUB_REPO = "mraerino/netlify-cms-hugo-previews-site"
+  HUGO_VERSION = "0.69"
