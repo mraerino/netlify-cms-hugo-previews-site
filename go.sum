@@ -278,8 +278,8 @@ github.com/mitchellh/mapstructure v1.2.2/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RR
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
 github.com/modern-go/reflect2 v1.0.1/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
-github.com/mraerino/hugo v0.69.1-0.20200413013750-c9df572810ac h1:QFTqLer1Wuq3vts+u+pjtldZYo+HJ+dmkpbe2msb3SU=
-github.com/mraerino/hugo v0.69.1-0.20200413013750-c9df572810ac/go.mod h1:Ta+AqbRl37045VuJmg25gEjEEx7pLG8S+jaSmjfC0s0=
+github.com/mraerino/hugo v0.69.1-0.20200413104343-19507e8ae4dc h1:4Cx0UKdvxzJHT1zCtR7e1/zVAI9i7H1bgPyitnUyAko=
+github.com/mraerino/hugo v0.69.1-0.20200413104343-19507e8ae4dc/go.mod h1:Ta+AqbRl37045VuJmg25gEjEEx7pLG8S+jaSmjfC0s0=
 github.com/muesli/smartcrop v0.3.0 h1:JTlSkmxWg/oQ1TcLDoypuirdE8Y/jzNirQeLkxpA6Oc=
 github.com/muesli/smartcrop v0.3.0/go.mod h1:i2fCI/UorTfgEpPPLWiFBv4pye+YAG78RwcQLUkocpI=
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
