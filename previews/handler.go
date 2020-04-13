@@ -19,6 +19,7 @@ import (
 	"github.com/mraerino/netlify-cms-hugo-previews-site/previews/githubfs"
 	nutil "github.com/netlify/netlify-commons/util"
 	"github.com/spf13/afero"
+	"gopkg.in/yaml.v2"
 )
 
 type previewAPI struct {
@@ -98,6 +99,52 @@ func newPreviewAPI() (*previewAPI, error) {
 	}, nil
 }
 
+func (a *previewAPI) insertData(path string, data map[string]interface{}) (err error) {
+	if !strings.HasSuffix(path, ".md") {
+		return errors.New("Only md files supported right now")
+	}
+
+	var body string
+	bodyIf, ok := data["body"]
+	if ok {
+		bodyStr, ok := bodyIf.(string)
+		if ok {
+			body = bodyStr
+		}
+	}
+	delete(data, "body")
+
+	targetFile, err := a.memFS.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		err = targetFile.Close()
+	}()
+
+	_, err = targetFile.WriteString("---\n")
+	if err != nil {
+		return
+	}
+
+	err = yaml.NewEncoder(targetFile).Encode(data)
+	if err != nil {
+		return
+	}
+
+	_, err = targetFile.WriteString("---\n")
+	if err != nil {
+		return
+	}
+
+	_, err = targetFile.WriteString(body)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func (a *previewAPI) build(path string) error {
 	partialBuild := a.initialBuildDone.Get()
 	var events []fsnotify.Event
@@ -136,6 +183,8 @@ type payload struct {
 	Path   string `json:"path"`
 	Layout string `json:"layout"`
 	Type   string `json:"type"`
+
+	Data map[string]interface{} `json:"data"`
 }
 
 func errResp(code int, msg string, err error) (*events.APIGatewayProxyResponse, error) {
@@ -156,6 +205,10 @@ func (a *previewAPI) handler(request events.APIGatewayProxyRequest) (*events.API
 	pl := new(payload)
 	if err := json.Unmarshal([]byte(request.Body), pl); err != nil {
 		return errResp(http.StatusBadRequest, "Failed to read request body", err)
+	}
+
+	if err := a.insertData(pl.Path, pl.Data); err != nil {
+		return errResp(http.StatusInternalServerError, "Failed to insert page data", err)
 	}
 
 	if err := a.build(pl.Path); err != nil {
