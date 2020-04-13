@@ -9,7 +9,6 @@ import (
 	"github.com/gohugoio/hugo/hugofs"
 	"github.com/gohugoio/hugo/hugolib"
 	"github.com/mraerino/netlify-cms-hugo-previews-site/previews/githubfs"
-	"github.com/mraerino/netlify-cms-hugo-previews-site/previews/helpers"
 	"github.com/spf13/afero"
 )
 
@@ -47,10 +46,6 @@ func main() {
 
 	site, err := hugolib.NewHugoSites(deps)
 	if err != nil {
-		panic(err)
-	}
-
-	if err := helpers.ReplaceBaseOf(site, mm, "_index.md", "", ""); err != nil {
 		panic(err)
 	}
 

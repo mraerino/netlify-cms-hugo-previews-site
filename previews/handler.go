@@ -17,14 +17,13 @@ import (
 	"github.com/gohugoio/hugo/hugofs"
 	"github.com/gohugoio/hugo/hugolib"
 	"github.com/mraerino/netlify-cms-hugo-previews-site/previews/githubfs"
-	"github.com/mraerino/netlify-cms-hugo-previews-site/previews/helpers"
 	nutil "github.com/netlify/netlify-commons/util"
 	"github.com/spf13/afero"
 )
 
 type previewAPI struct {
 	hugo  *hugolib.HugoSites
-	memfs afero.Fs
+	memFS afero.Fs
 
 	initialBuildDone nutil.AtomicBool
 }
@@ -88,7 +87,7 @@ func newPreviewAPI() (*previewAPI, error) {
 
 	return &previewAPI{
 		hugo:  site,
-		memfs: mm,
+		memFS: mm,
 
 		initialBuildDone: nutil.NewAtomicBool(false),
 	}, nil
@@ -133,10 +132,6 @@ func (a *previewAPI) getPublicPath(path string) string {
 	return ""
 }
 
-func (a *previewAPI) replaceBaseOf(contentPath, layout, fmType string) error {
-	return helpers.ReplaceBaseOf(a.hugo, a.memfs, contentPath, layout, fmType)
-}
-
 type payload struct {
 	Path   string `json:"path"`
 	Layout string `json:"layout"`
@@ -163,10 +158,6 @@ func (a *previewAPI) handler(request events.APIGatewayProxyRequest) (*events.API
 		return errResp(http.StatusBadRequest, "Failed to read request body", err)
 	}
 
-	if err := a.replaceBaseOf(pl.Path, pl.Layout, pl.Type); err != nil {
-		return errResp(http.StatusInternalServerError, "Failed to swap templates", err)
-	}
-
 	err := a.build(pl.Path)
 	if err != nil {
 		return errResp(http.StatusInternalServerError, "Failed to render site", err)
@@ -177,9 +168,9 @@ func (a *previewAPI) handler(request events.APIGatewayProxyRequest) (*events.API
 		return errResp(http.StatusNotFound, "Failed to find public path", nil)
 	}
 
-	content, err := afero.ReadFile(a.memfs, filepath.Join("public", publicPath))
+	content, err := afero.ReadFile(a.memFS, filepath.Join("public", publicPath))
 	if err != nil {
-		afero.Walk(a.memfs, "/", func(path string, file os.FileInfo, err error) error {
+		afero.Walk(a.memFS, "/", func(path string, file os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
