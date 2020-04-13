@@ -17,6 +17,7 @@ import (
 	"github.com/gohugoio/hugo/hugofs"
 	"github.com/gohugoio/hugo/hugolib"
 	"github.com/mraerino/netlify-cms-hugo-previews-site/previews/githubfs"
+	"github.com/mraerino/netlify-cms-hugo-previews-site/previews/helpers"
 	nutil "github.com/netlify/netlify-commons/util"
 	"github.com/spf13/afero"
 )
@@ -93,12 +94,16 @@ func newPreviewAPI() (*previewAPI, error) {
 	}, nil
 }
 
+func contentPath(path string) string {
+	return filepath.Join("content", path)
+}
+
 func (a *previewAPI) build(path string) error {
 	partialBuild := a.initialBuildDone.Get()
 	var events []fsnotify.Event
 	if partialBuild {
 		events = append(events, fsnotify.Event{
-			Name: path,
+			Name: contentPath(path),
 			Op:   fsnotify.Write,
 		})
 	}
@@ -114,9 +119,10 @@ func (a *previewAPI) build(path string) error {
 	return nil
 }
 
-func (a *previewAPI) getPublicPath(contentPath string) string {
+func (a *previewAPI) getPublicPath(path string) string {
+	mdPath := contentPath(path)
 	for _, page := range a.hugo.Pages() {
-		if !page.File().IsZero() && page.Filename() == contentPath {
+		if !page.File().IsZero() && page.Filename() == mdPath {
 			publicPath := page.RelPermalink()
 			if strings.HasSuffix(publicPath, "/") {
 				publicPath += "index.html"
@@ -127,8 +133,14 @@ func (a *previewAPI) getPublicPath(contentPath string) string {
 	return ""
 }
 
+func (a *previewAPI) replaceBaseOf(contentPath, layout, fmType string) error {
+	return helpers.ReplaceBaseOf(a.hugo, a.memfs, contentPath, layout, fmType)
+}
+
 type payload struct {
-	Path string `json:"path"`
+	Path   string `json:"path"`
+	Layout string `json:"layout"`
+	Type   string `json:"type"`
 }
 
 func errResp(code int, msg string, err error) (*events.APIGatewayProxyResponse, error) {
@@ -149,6 +161,10 @@ func (a *previewAPI) handler(request events.APIGatewayProxyRequest) (*events.API
 	pl := new(payload)
 	if err := json.Unmarshal([]byte(request.Body), pl); err != nil {
 		return errResp(http.StatusBadRequest, "Failed to read request body", err)
+	}
+
+	if err := a.replaceBaseOf(pl.Path, pl.Layout, pl.Type); err != nil {
+		return errResp(http.StatusInternalServerError, "Failed to swap templates", err)
 	}
 
 	err := a.build(pl.Path)
