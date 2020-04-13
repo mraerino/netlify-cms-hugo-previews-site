@@ -2,7 +2,7 @@ module github.com/mraerino/netlify-cms-hugo-previews-site
 
 go 1.14
 
-replace github.com/gohugoio/hugo => github.com/mraerino/hugo v0.69.1-0.20200412191012-4f751c145f76
+replace github.com/gohugoio/hugo => github.com/mraerino/hugo v0.69.1-0.20200413013750-c9df572810ac
 
 require (
 	github.com/aws/aws-lambda-go v1.16.0
