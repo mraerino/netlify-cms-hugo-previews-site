@@ -73,6 +73,11 @@ func newPreviewAPI() (*previewAPI, error) {
 		return nil, err
 	}
 
+	cfg.Set("buildDrafts", true)
+	cfg.Set("buildFuture", true)
+	cfg.Set("buildExpired", true)
+	cfg.Set("environment", "preview")
+
 	hugoFs := hugofs.NewFrom(fs, cfg)
 	deps := deps.DepsCfg{
 		Fs:     hugoFs,

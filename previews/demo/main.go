@@ -40,6 +40,11 @@ func main() {
 		panic(err)
 	}
 
+	cfg.Set("buildDrafts", true)
+	cfg.Set("buildFuture", true)
+	cfg.Set("buildExpired", true)
+	cfg.Set("environment", "preview")
+
 	// BasePathFs is required so public files are actually written
 	//hugoFs := hugofs.NewFrom(afero.NewBasePathFs(fs, "/"), cfg)
 	hugoFs := hugofs.NewFrom(fs, cfg)
