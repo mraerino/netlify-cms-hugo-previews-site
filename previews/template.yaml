@@ -10,7 +10,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./
-      Handler: dist/previews
+      Handler: dist/preview
       Runtime: go1.x
       Tracing: Active
       Events:
