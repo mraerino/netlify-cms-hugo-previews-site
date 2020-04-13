@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/gohugoio/hugo/common/loggers"
 	"github.com/gohugoio/hugo/deps"
 	"github.com/gohugoio/hugo/hugofs"
@@ -56,9 +58,10 @@ func main() {
 	//hugoFs := hugofs.NewFrom(afero.NewBasePathFs(fs, "/"), cfg)
 	hugoFs := hugofs.NewFrom(fs, cfg)
 	deps := deps.DepsCfg{
-		Fs:     hugoFs,
-		Cfg:    cfg,
-		Logger: loggers.NewDebugLogger(),
+		Fs:      hugoFs,
+		Cfg:     cfg,
+		Logger:  loggers.NewDebugLogger(),
+		Running: true,
 	}
 
 	site, err := hugolib.NewHugoSites(deps)
@@ -70,7 +73,24 @@ func main() {
 		panic(err)
 	}
 
-	content, err := afero.ReadFile(mm, "public/index.html")
+	if err := afero.WriteFile(mm, filepath.Join(cwd, "content/about.md"), []byte(`
+---
+title: Bla
+layout: page
+---
+blubb
+		`), os.ModePerm); err != nil {
+		panic(err)
+	}
+
+	if err := site.Build(hugolib.BuildCfg{}, fsnotify.Event{
+		Name: filepath.Join(cwd, "content/about.md"),
+		Op:   fsnotify.Write,
+	}); err != nil {
+		panic(err)
+	}
+
+	content, err := afero.ReadFile(mm, "public/about/index.html")
 	if err != nil {
 		panic(err)
 	}
