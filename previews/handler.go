@@ -115,6 +115,9 @@ func (a *previewAPI) insertData(path string, data map[string]interface{}) (err e
 	}
 	delete(data, "body")
 
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
 	targetFile, err := a.memFS.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.ModePerm)
 	if err != nil {
 		return err
@@ -150,8 +153,11 @@ func (a *previewAPI) build(path string) error {
 	partialBuild := a.initialBuildDone.Get()
 	var events []fsnotify.Event
 	if partialBuild {
+		if !strings.HasPrefix(path, "/") {
+			path = "/" + path
+		}
 		events = append(events, fsnotify.Event{
-			Name: "/" + path,
+			Name: path,
 			Op:   fsnotify.Write,
 		})
 	}
