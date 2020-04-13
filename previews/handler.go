@@ -81,9 +81,10 @@ func newPreviewAPI() (*previewAPI, error) {
 
 	hugoFs := hugofs.NewFrom(fs, cfg)
 	deps := deps.DepsCfg{
-		Fs:     hugoFs,
-		Cfg:    cfg,
-		Logger: loggers.NewDebugLogger(),
+		Fs:      hugoFs,
+		Cfg:     cfg,
+		Logger:  loggers.NewDebugLogger(),
+		Running: true,
 	}
 
 	site, err := hugolib.NewHugoSites(deps)
