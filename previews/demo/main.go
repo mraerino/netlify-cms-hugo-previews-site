@@ -8,28 +8,33 @@ import (
 	"github.com/gohugoio/hugo/deps"
 	"github.com/gohugoio/hugo/hugofs"
 	"github.com/gohugoio/hugo/hugolib"
-	"github.com/mraerino/netlify-cms-hugo-previews-site/previews/githubfs"
 	"github.com/spf13/afero"
 )
 
 func main() {
-	ghFS, err := githubfs.New(
-		os.Getenv("HUGO_PREVIEW_GITHUB_TOKEN"),
-		os.Getenv("HUGO_PREVIEW_GITHUB_REPO"),
-		"",
-	)
+	// ghFS, err := githubfs.New(
+	// 	os.Getenv("HUGO_PREVIEW_GITHUB_TOKEN"),
+	// 	os.Getenv("HUGO_PREVIEW_GITHUB_REPO"),
+	// 	"",
+	// )
+	// if err != nil {
+	// 	panic(err)
+	// }
+	osFs := afero.NewOsFs()
+
+	mm := afero.NewMemMapFs()
+	cachedFs := afero.NewCacheOnReadFs(osFs, mm, 0)
+	fs := afero.NewCopyOnWriteFs(cachedFs, mm)
+
+	cwd, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
 
-	mm := afero.NewMemMapFs()
-	cachedFs := afero.NewCacheOnReadFs(ghFS, mm, 0)
-	fs := afero.NewCopyOnWriteFs(cachedFs, mm)
-
 	cfg, _, err := hugolib.LoadConfig(hugolib.ConfigSourceDescriptor{
 		Fs:         fs,
 		Filename:   "config.yaml",
-		WorkingDir: "/",
+		WorkingDir: cwd,
 	})
 	if err != nil {
 		panic(err)
