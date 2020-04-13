@@ -1,0 +1,10 @@
+<div id="page" class="site palette-{{ .Site.Params.color_scheme }} accent-{{ .Site.Params.accent_color }}">
+  {{ partial "header.html" . }}
+  <main id="content" class="site-content">
+    {{ block "content" . }}{{ end }}
+  </main><!-- .site-content -->
+  {{ partial "footer.html" . }}
+</div><!-- .site -->
+<!-- Scripts -->
+<script src="{{ "assets/js/plugins.js" | relURL }}"></script>
+<script src="{{ "assets/js/main.js" | relURL }}"></script>
